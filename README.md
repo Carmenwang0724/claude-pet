@@ -51,7 +51,7 @@ She can run across the desktop, pick up a few icons one by one, carry each above
 
 - **Mess Up the Desktop** in the menu moves 6 icons. With **Visit the Desktop on Her Own** switched on, she goes by herself every 15 to 30 minutes and moves 4, as long as you are at the computer to watch.
 - **Tidy the Desktop** sends her out to bring the icons back. She also does this on her own 4 to 8 minutes after every mess. If you are away or she is asleep by then, she puts everything back in one go instead.
-- While she carries an icon, the real Finder icon follows her, updated about 16 times a second. Where a window hides the desktop she shows a copy of the icon with its file name, so you can still see what she is holding.
+- While she carries an icon, the real Finder icon follows her, updated up to 20 times a second. These moves are sent from a background queue, so a slow answer from Finder never makes her stutter. Where a window hides the desktop she shows a copy of the icon with its file name, so you can still see what she is holding.
 - A trip ends early when Claude needs you, when you pick her up with the mouse, or after 150 seconds. A tidy-up that is cut short still puts every icon back.
 
 What it does to your files: nothing but their position on the desktop. No file is moved, renamed, opened or deleted.
@@ -159,7 +159,7 @@ How it stays small:
 | `Sources/Sessions/` | reading hook events, tracking each session, session titles |
 | `Sources/Windows/` | the transparent panels, the task list view, the window scanner |
 | `Sources/Desktop/DesktopMischief.swift` | reading the desktop through Finder, saving and restoring its layout |
-| `Sources/Desktop/DesktopIconMover.swift` | moving one icon at a time with a direct Apple event |
+| `Sources/Desktop/DesktopIconMover.swift` | moving one icon at a time with a direct Apple event, off the main thread while she carries it |
 | `hooks/hook.sh` | called by Claude Code for each event, appends one line to the event log |
 | `install_hooks.py` | installs or removes the hooks |
 | `build.sh` | compiles everything under `Sources` and assembles `ClaudePet.app` |

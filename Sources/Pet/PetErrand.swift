@@ -718,10 +718,22 @@ extension PetController {
         )
     }
 
-    /// Moves the real icon to where the pet holds it, as often as Finder keeps up with.
+    /// Keeps the real icon where the pet holds it.
     /// Returns false when the icon or the whole trip had to be given up.
     func sendIconIfDue(trip: DesktopErrand, job: ErrandJob, now: TimeInterval) -> Bool {
-        guard trip.isHoldingIcon, now >= trip.nextSendTime else {
+        guard trip.isHoldingIcon else {
+            return true
+        }
+
+        // Let go when Finder refuses, does not answer, or keeps failing
+        let isOutOfReach = trip.mover.wasRefused || trip.mover.hasTimedOut
+        if isOutOfReach || trip.mover.failureStreak >= PetConfig.errandSendFailureLimit {
+            giveUpIcon(trip: trip, now: now)
+            return false
+        }
+
+        // Skip the steps where the icon has not moved or the last request is too fresh
+        guard now >= trip.nextSendTime else {
             return true
         }
         let place = finderPlace(of: trip.iconPoint)
@@ -729,28 +741,18 @@ extension PetController {
             return true
         }
 
-        // Move the icon, then wait longer when Finder was slow
-        let isMoved = moveIcon(trip: trip, name: job.iconName, x: place.x, y: place.y)
-        let sendCost = trip.mover.lastSendDuration * PetConfig.errandSendLoad
-        trip.nextSendTime = now + max(PetConfig.errandIconSendInterval, sendCost)
-        if isMoved {
-            trip.lastSentX = place.x
-            trip.lastSentY = place.y
-            trip.failedSends = 0
-            return true
+        // Hand the newest place to the sender, which skips ahead when Finder is slow
+        if !trip.isRehearsal {
+            trip.mover.follow(name: job.iconName, x: place.x, y: place.y)
         }
-
-        // Let go after repeated failures, or at once when Finder refuses or does not answer
-        trip.failedSends += 1
-        let isHopeless = trip.mover.wasRefused || trip.mover.hasTimedOut
-        guard isHopeless || trip.failedSends >= PetConfig.errandSendFailureLimit else {
-            return true
-        }
-        giveUpIcon(trip: trip, now: now)
-        return false
+        trip.lastSentX = place.x
+        trip.lastSentY = place.y
+        trip.nextSendTime = now + PetConfig.errandIconSendInterval
+        return true
     }
 
     /// Moves the real icon, or only pretends to during a rehearsal.
+    /// Waits for Finder's answer, which the first and the last move of every icon need.
     func moveIcon(trip: DesktopErrand, name: String, x: Int, y: Int) -> Bool {
         guard !trip.isRehearsal else {
             return true
@@ -791,6 +793,10 @@ extension PetController {
 
     /// Lets go of the icon in hand.
     func releaseIcon(trip: DesktopErrand) {
+        // Make sure no move is still on its way to Finder
+        if trip.isHoldingIcon && !trip.isRehearsal {
+            trip.mover.settle()
+        }
         trip.isHoldingIcon = false
         trip.isIconCovered = false
         trip.iconPanel?.hide()

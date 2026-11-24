@@ -51,7 +51,7 @@ English: [README.md](README.md)
 
 - 菜单里的 **Mess Up the Desktop** 一次搬 6 个。打开 **Visit the Desktop on Her Own** 后，她每隔 15 到 30 分钟自己去一趟，搬 4 个，而且只在你在电脑前的时候去。
 - **Tidy the Desktop** 让她去把图标搬回来。每次捣乱后 4 到 8 分钟她也会自己去。到时候如果你不在，或者她睡着了，就改成一次性全部放回。
-- 她抱着图标跑的时候，Finder 里的真图标跟着她动，每秒大约更新 16 次。桌面被窗口挡住的地方，她会显示一个带文件名的图标副本，所以你仍然看得见她抱的是哪个文件。
+- 她抱着图标跑的时候，Finder 里的真图标跟着她动，每秒最多更新 20 次。这些移动在后台线程发送，Finder 偶尔响应慢也不会让她卡顿。桌面被窗口挡住的地方，她会显示一个带文件名的图标副本，所以你仍然看得见她抱的是哪个文件。
 - Claude 需要你、你用鼠标把她拎起来，或者一趟超过 150 秒，这趟就提前结束。整理被打断时，图标照样全部放回。
 
 对文件的影响只有一项：图标在桌面上的位置。不移动、不改名、不打开、不删除任何文件。
@@ -159,7 +159,7 @@ python3 install_hooks.py --uninstall
 | `Sources/Sessions/` | 读 hook 事件、跟踪每个会话、取会话标题 |
 | `Sources/Windows/` | 透明窗口、清单的画法、窗口扫描 |
 | `Sources/Desktop/DesktopMischief.swift` | 通过 Finder 读桌面，保存和恢复布局 |
-| `Sources/Desktop/DesktopIconMover.swift` | 用一条 Apple event 直接移动单个图标 |
+| `Sources/Desktop/DesktopIconMover.swift` | 用一条 Apple event 直接移动单个图标，抱着跑的途中在后台线程发送 |
 | `hooks/hook.sh` | Claude Code 每个事件调用一次，往事件记录里追加一行 |
 | `install_hooks.py` | 安装或卸载 hooks |
 | `build.sh` | 编译 `Sources` 下的全部文件，组装出 `ClaudePet.app` |

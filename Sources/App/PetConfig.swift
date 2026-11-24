@@ -147,8 +147,7 @@ enum PetConfig {
     static let errandEdgeMargin: CGFloat = 70
     static let errandChestHeight: CGFloat = 0.45
     static let errandCarryGap: CGFloat = 22
-    static let errandIconSendInterval: TimeInterval = 0.06
-    static let errandSendLoad: Double = 4
+    static let errandIconSendInterval: TimeInterval = 0.05
     static let errandSendFailureLimit = 3
     static let errandWindowScanInterval: TimeInterval = 0.3
 
