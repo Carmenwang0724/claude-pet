@@ -820,6 +820,7 @@ extension PetController {
         releaseIcon(trip: trip)
         lastErrandSummary = trip.summary
         errand = nil
+        perform(#selector(releaseUnusedMemory), with: nil, afterDelay: PetConfig.memoryReliefDelay)
         startFalling()
         guard !trip.isRehearsal else {
             lastMischiefReport = "rehearsal done: moved \(trip.movedCount) of \(trip.jobs.count) icons"
@@ -843,6 +844,7 @@ extension PetController {
         releaseIcon(trip: trip)
         lastErrandSummary = trip.summary
         errand = nil
+        perform(#selector(releaseUnusedMemory), with: nil, afterDelay: PetConfig.memoryReliefDelay)
         if dropsToFloor {
             startFalling()
         }

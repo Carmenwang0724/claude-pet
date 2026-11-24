@@ -137,6 +137,8 @@ Measured on an Apple silicon laptop.
 | standing | 1% to 2% | 13 MB |
 | walking or climbing, task list shown | 4% to 6% | 14 to 15 MB |
 
+A desktop trip adds 1 to 3 MB for a minute or so.
+
 How it stays small:
 
 - The animation frames are cut once by a short-lived helper process and stored as compressed files. The app maps those files and expands at most two clips at a time.
