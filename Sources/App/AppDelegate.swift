@@ -34,6 +34,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        // Bring back any app hidden for a desktop trip
+        controller?.closeCurtain()
+
         // Remove the process file when it belongs to this copy
         let ownLine = "\(ProcessInfo.processInfo.processIdentifier)\n"
         let storedLine = try? String(contentsOf: PetConfig.processIdentifierFile, encoding: .utf8)

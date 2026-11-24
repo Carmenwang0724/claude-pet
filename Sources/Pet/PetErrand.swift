@@ -172,6 +172,9 @@ extension PetController {
                 return
             }
             let jobs = makeMessJobs(icons: icons, limits: limits)
+            if isUserRequest {
+                openCurtain()
+            }
             beginErrand(
                 kind: .mess,
                 jobs: jobs,
@@ -206,9 +209,10 @@ extension PetController {
         }
         autoTidyTime = nil
 
-        // Put everything back at once when nobody is watching
+        // Put everything back at once when nobody is watching or windows hide the desktop
         let isUnwatched = motion.isSleeping || idleSeconds() >= PetConfig.awayIdleTime
-        if isUnwatched && !isUserRequest {
+        let isDesktopHidden = desktopCoverage() >= PetConfig.visibleDesktopCoverageLimit
+        if !isUserRequest && (isUnwatched || isDesktopHidden) {
             restoreDesktopAtOnce(isUserRequest: false)
             return
         }
@@ -229,6 +233,9 @@ extension PetController {
                 return
             }
             let jobs = makeTidyJobs(strays: strays, limits: limits)
+            if isUserRequest {
+                openCurtain()
+            }
             beginErrand(
                 kind: .tidy,
                 jobs: jobs,
@@ -255,6 +262,7 @@ extension PetController {
                 self?.autoTidyTime = CACurrentMediaTime() + PetConfig.autoTidyMaximumDelay
             }
             self?.reportMischief(outcome: outcome, successText: "All tidy", isUserRequest: isUserRequest)
+            self?.closeCurtainSoon(delay: PetConfig.curtainLingerAfterTidy)
         }
     }
 
@@ -328,6 +336,54 @@ extension PetController {
             )
         }
         beginErrand(kind: .mess, jobs: jobs, isUserRequest: true, isRehearsal: true, limits: limits, now: now)
+    }
+
+    // MARK: - Curtain
+
+    /// Hides the other apps so the real icons can be seen during the trip.
+    func openCurtain() {
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(closeCurtain), object: nil)
+        _ = curtain.open()
+    }
+
+    /// Brings the hidden apps back after a short pause, so the result stays in view for a moment.
+    func closeCurtainSoon(delay: TimeInterval) {
+        guard curtain.isOpen else {
+            return
+        }
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(closeCurtain), object: nil)
+        perform(#selector(closeCurtain), with: nil, afterDelay: delay)
+    }
+
+    /// Brings the hidden apps back now.
+    @objc func closeCurtain() {
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(closeCurtain), object: nil)
+        curtain.close()
+    }
+
+    /// Measures how much of the main screen the windows of other apps cover, from 0 to 1.
+    func desktopCoverage() -> CGFloat {
+        guard let limits = desktopLimits() else {
+            return 1
+        }
+
+        // Check a grid of points against every window
+        let frames = scanner.windowFrames()
+        let columns = PetConfig.coverageGridColumns
+        let rows = PetConfig.coverageGridRows
+        var coveredCount = 0
+        for column in 0..<columns {
+            for row in 0..<rows {
+                let point = CGPoint(
+                    x: limits.minX + (CGFloat(column) + 0.5) / CGFloat(columns) * limits.width,
+                    y: limits.minY + (CGFloat(row) + 0.5) / CGFloat(rows) * limits.height
+                )
+                if frames.contains(where: { $0.contains(point) }) {
+                    coveredCount += 1
+                }
+            }
+        }
+        return CGFloat(coveredCount) / CGFloat(columns * rows)
     }
 
     // MARK: - Planning
@@ -831,6 +887,7 @@ extension PetController {
             lastMischiefReport = "done: moved \(trip.movedCount) of \(trip.jobs.count) icons"
             let closingText = trip.movedCount > 0 ? "Hehe. I'll tidy up in a few minutes." : "Hmm, they would not budge."
             showTransientBubble(closingText, duration: 7, now: now)
+            closeCurtainSoon(delay: PetConfig.curtainLingerAfterMess)
         case .tidy:
             restoreDesktopAtOnce(isUserRequest: trip.isUserRequest)
         }
@@ -845,6 +902,7 @@ extension PetController {
         lastErrandSummary = trip.summary
         errand = nil
         perform(#selector(releaseUnusedMemory), with: nil, afterDelay: PetConfig.memoryReliefDelay)
+        closeCurtain()
         if dropsToFloor {
             startFalling()
         }

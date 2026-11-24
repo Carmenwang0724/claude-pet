@@ -149,6 +149,7 @@ final class PetController: NSObject {
     let scanner = SurfaceScanner()
     let monitor = SessionMonitor()
     let mischief = DesktopMischief()
+    let curtain = DesktopCurtain()
     var atlas: PetAtlas
     var timer: Timer?
 

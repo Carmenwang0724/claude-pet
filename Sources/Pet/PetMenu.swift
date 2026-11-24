@@ -344,6 +344,8 @@ extension PetController: PetViewDelegate {
             "errand": errand?.summary ?? "",
             "lastErrand": lastErrandSummary,
             "autoTidyIn": autoTidyTime.map { $0 - now } ?? -1,
+            "curtainHiddenApps": curtain.hiddenCount,
+            "desktopCoverage": Double(desktopCoverage()),
             "hasDesktopSnapshot": mischief.hasSnapshot,
             "ledges": ledgeReports,
             "sessions": monitor.debugReport(),
@@ -426,6 +428,10 @@ extension PetController: PetViewDelegate {
             if words.count == 2, let image = CarriedIconPanel.renderSample(fileName: "Rehearsal notes.pdf", iconSize: mischief.desktopIconSize) {
                 _ = ImageFile.writePNG(image: image, to: URL(fileURLWithPath: words[1]))
             }
+        case "curtain-open":
+            openCurtain()
+        case "curtain-close":
+            closeCurtain()
         case "desktop-rehearse":
             rehearseErrand(now: now)
         case "desktop-restore":

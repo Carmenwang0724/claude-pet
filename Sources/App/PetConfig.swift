@@ -151,6 +151,13 @@ enum PetConfig {
     static let errandSendFailureLimit = 3
     static let errandWindowScanInterval: TimeInterval = 0.3
 
+    // Clear the windows away for a trip asked for from the menu
+    static let curtainLingerAfterMess: TimeInterval = 2.5
+    static let curtainLingerAfterTidy: TimeInterval = 1.5
+    static let visibleDesktopCoverageLimit: CGFloat = 0.5
+    static let coverageGridColumns = 16
+    static let coverageGridRows = 10
+
     // Filter windows
     static let minimumWindowWidth: CGFloat = 220
     static let minimumWindowHeight: CGFloat = 120

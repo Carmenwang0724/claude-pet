@@ -302,7 +302,11 @@ extension PetController {
         let wantsVisit = isAutoMischiefEnabled && !isWanderingPaused && !mischief.hasSnapshot
         if wantsVisit && isFreeForTrip && userIsAround && motion.isAwakeOnLedge && now >= nextMischiefTime {
             nextMischiefTime = now + randomMischiefGap()
-            startMischief(iconCount: PetConfig.autoMischiefIconCount, isUserRequest: false, now: now)
+            if desktopCoverage() < PetConfig.visibleDesktopCoverageLimit {
+                startMischief(iconCount: PetConfig.autoMischiefIconCount, isUserRequest: false, now: now)
+            } else {
+                lastMischiefReport = "visit skipped: windows hide the desktop"
+            }
         }
 
         // Tidy up a few minutes after a mess
