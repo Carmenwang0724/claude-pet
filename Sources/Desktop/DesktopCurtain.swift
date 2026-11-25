@@ -40,10 +40,14 @@ final class DesktopCurtain {
                 continue
             }
             let isAlreadyHeld = hiddenApplications.contains { $0.processIdentifier == application.processIdentifier }
-            if !isAlreadyHeld && application.hide() {
-                hiddenApplications.append(application)
-                newlyHiddenCount += 1
+            guard !isAlreadyHeld else {
+                continue
             }
+
+            // Keep the app whatever hide() answers, since it can report false and still hide the app
+            _ = application.hide()
+            hiddenApplications.append(application)
+            newlyHiddenCount += 1
         }
         return newlyHiddenCount
     }
@@ -54,9 +58,9 @@ final class DesktopCurtain {
             return
         }
 
-        // Show the apps again
+        // Show the apps again, whatever unhide() answers
         for application in hiddenApplications where !application.isTerminated {
-            application.unhide()
+            _ = application.unhide()
         }
         hiddenApplications = []
 
