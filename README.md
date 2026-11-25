@@ -34,7 +34,7 @@ Every Claude session that has something going on gets one row above her head.
 - Clicking a row brings Claude to the front and opens that session. This uses the `claude://` link of the Claude desktop app, so it only opens the exact session for sessions started there.
 - Up to 5 rows are shown. The rest are folded into a "+N more" row.
 - Claude sends no event when you interrupt a turn. The pet notices by reading the end of the session transcript, which takes 5 to 10 seconds.
-- The list follows her by default. It can be pinned to the top right corner from the menu.
+- The list always rides above her head. Click the short line in its top right corner to collapse it into a small badge such as "3 unread · 1 running", whose dot takes the colour of the most urgent session. Click the badge to open the list again. The choice is remembered.
 
 How she reacts to Claude:
 
@@ -79,7 +79,7 @@ Things worth knowing:
 | Climb Walls and Ceiling | off keeps her on the floor and on windows |
 | React to the Mouse | off stops the visits to the cursor, the startled jumps and the petting |
 | Break and Bedtime Reminders | off stops both reminders |
-| Pin Task List to Top Right | the list stays in the corner instead of following her |
+| Collapse Task List | shows the badge instead of the full list |
 | Swap Left and Right Walk | for spritesheets whose two running rows are drawn the other way round |
 | Mess Up the Desktop, Tidy the Desktop, Visit the Desktop on Her Own | see Desktop trips |
 | Clear Task List | drops every row |
@@ -195,6 +195,7 @@ Write a command into `debug-request` to direct her:
 | `remind`, `night` | show the break reminder, the bedtime reminder |
 | `click` | same as clicking her |
 | `board-click 0`, `board-click 0 dry` | click the first task list row; `dry` only records the link |
+| `board-toggle` | collapse or open the task list |
 | `mouse rush`, `mouse pet`, `mouse rest` | play back a scripted cursor path |
 | `snapshot /tmp/pet.png`, `snapshot-board /tmp/board.png`, `snapshot-icon /tmp/icon.png` | save a picture of the pet, the task list, or the carried icon |
 | `desktop-rehearse` | run a trip with made-up icons that never touches Finder |

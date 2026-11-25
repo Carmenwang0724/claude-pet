@@ -133,7 +133,7 @@ extension PetController: PetViewDelegate {
         menu.addItem(makeSwitch(title: "Climb Walls and Ceiling", isOn: isClimbingEnabled, action: #selector(toggleClimbing(_:))))
         menu.addItem(makeSwitch(title: "React to the Mouse", isOn: isMousePlayEnabled, action: #selector(toggleMousePlay(_:))))
         menu.addItem(makeSwitch(title: "Break and Bedtime Reminders", isOn: areRemindersEnabled, action: #selector(toggleReminders(_:))))
-        menu.addItem(makeSwitch(title: "Pin Task List to Top Right", isOn: isBoardPinned, action: #selector(toggleBoardPin(_:))))
+        menu.addItem(makeSwitch(title: "Collapse Task List", isOn: isBoardCollapsed, action: #selector(toggleBoardCollapse(_:))))
         let swapsRunningRows = PetPreferences.swapsRunningRows(identifier: atlas.identifier)
         menu.addItem(makeSwitch(title: "Swap Left and Right Walk", isOn: swapsRunningRows, action: #selector(toggleRunningRowSwap(_:))))
         menu.addItem(NSMenuItem.separator())
@@ -217,9 +217,8 @@ extension PetController: PetViewDelegate {
         UserDefaults.standard.set(areRemindersEnabled, forKey: PetConfig.remindersEnabledKey)
     }
 
-    @objc func toggleBoardPin(_ sender: NSMenuItem) {
-        isBoardPinned.toggle()
-        UserDefaults.standard.set(isBoardPinned, forKey: PetConfig.boardPinnedKey)
+    @objc func toggleBoardCollapse(_ sender: NSMenuItem) {
+        toggleBoardCollapsed()
     }
 
     @objc func toggleAutoMischief(_ sender: NSMenuItem) {
@@ -319,6 +318,8 @@ extension PetController: PetViewDelegate {
             "activities": activityReports,
             "boardRows": rowReports,
             "isBoardHovered": isBoardHovered,
+            "isBoardCollapsed": isBoardCollapsed,
+            "boardBadge": makeBoardBadge().text,
             "boardFrame": NSStringFromRect(board.visibleFrame),
             "lastOpenedLink": lastOpenedLink,
             "pet": atlas.identifier,
@@ -407,6 +408,8 @@ extension PetController: PetViewDelegate {
                 openActivity(at: index)
                 isLinkOpeningDisabled = false
             }
+        case "board-toggle":
+            toggleBoardCollapsed()
         case "snapshot-board":
             if words.count == 2, let image = board.renderSnapshot(scale: 2) {
                 _ = ImageFile.writePNG(image: image, to: URL(fileURLWithPath: words[1]))

@@ -34,7 +34,7 @@ English: [README.md](README.md)
 - 点一行，会切到 Claude 并打开那个会话。这一步用的是 Claude 桌面版的 `claude://` 链接，所以只有在桌面版里开的会话才能精确打开。
 - 最多显示 5 行，多出来的合并成一行「+N more」。
 - 你中断一轮时 Claude 不发事件。她靠读会话记录文件的末尾来发现，需要 5 到 10 秒。
-- 清单默认跟着她走，可以在菜单里改成固定在右上角。
+- 清单始终在她头顶。点清单右上角的短横线可以收起，变成一个小胶囊，比如「3 unread · 1 running」，圆点颜色跟最急的那个会话一致。点胶囊再展开。收起还是展开会被记住。
 
 她对 Claude 状态的反应：
 
@@ -79,7 +79,7 @@ English: [README.md](README.md)
 | Climb Walls and Ceiling | 关掉后只在地面和窗口顶上活动 |
 | React to the Mouse | 关掉后不再走向鼠标、躲鼠标，摸头也没反应 |
 | Break and Bedtime Reminders | 关掉后不再提醒休息和催睡 |
-| Pin Task List to Top Right | 清单固定在右上角，不跟着她走 |
+| Collapse Task List | 只显示小胶囊，不显示整张清单 |
 | Swap Left and Right Walk | 有些素材把左右两行跑步画反了，用这项纠正 |
 | Mess Up the Desktop、Tidy the Desktop、Visit the Desktop on Her Own | 见「去桌面捣乱」 |
 | Clear Task List | 清空清单 |
@@ -195,6 +195,7 @@ touch ~/.claude-pet/debug-request
 | `remind`、`night` | 弹出休息提醒、催睡提醒 |
 | `click` | 等同于单击她 |
 | `board-click 0`、`board-click 0 dry` | 点清单第一行；加 `dry` 只记录链接，不真的打开 |
+| `board-toggle` | 收起或展开任务清单 |
 | `mouse rush`、`mouse pet`、`mouse rest` | 回放一段预设的鼠标轨迹 |
 | `snapshot /tmp/pet.png`、`snapshot-board /tmp/board.png`、`snapshot-icon /tmp/icon.png` | 把宠物、任务清单、抱着的图标存成图片 |
 | `desktop-rehearse` | 用假图标彩排一趟，完全不碰 Finder |

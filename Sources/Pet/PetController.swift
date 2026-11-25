@@ -235,7 +235,7 @@ final class PetController: NSObject {
     var isMousePlayEnabled: Bool
     var areRemindersEnabled: Bool
     var isAutoMischiefEnabled: Bool
-    var isBoardPinned: Bool
+    var isBoardCollapsed: Bool
 
     init(atlas: PetAtlas) {
         // Read the saved preferences
@@ -252,7 +252,7 @@ final class PetController: NSObject {
         self.isMousePlayEnabled = defaults.bool(forKey: PetConfig.mousePlayEnabledKey)
         self.areRemindersEnabled = defaults.bool(forKey: PetConfig.remindersEnabledKey)
         self.isAutoMischiefEnabled = defaults.bool(forKey: PetConfig.autoMischiefEnabledKey)
-        self.isBoardPinned = defaults.bool(forKey: PetConfig.boardPinnedKey)
+        self.isBoardCollapsed = defaults.bool(forKey: PetConfig.boardCollapsedKey)
         self.panel = PetPanel.makeTransparent(size: size)
         self.petView = PetView(frame: CGRect(origin: .zero, size: size))
         super.init()
@@ -260,6 +260,9 @@ final class PetController: NSObject {
         petView.delegate = self
         board.setSelectionHandler { [weak self] index in
             self?.openActivity(at: index)
+        }
+        board.setToggleHandler { [weak self] in
+            self?.toggleBoardCollapsed()
         }
     }
 

@@ -32,7 +32,7 @@ enum PetConfig {
     static let remindersEnabledKey = "remindersEnabled"
     static let autoMischiefEnabledKey = "autoMischiefEnabled"
     static let manualSortAcceptedKey = "manualSortAccepted"
-    static let boardPinnedKey = "boardPinned"
+    static let boardCollapsedKey = "boardCollapsed"
     static let runningRowSwapKey = "runningRowSwapByPet"
     static let petsWithSwappedRunningRows: Set<String> = ["claude-opus-scholar"]
     static let defaultSwitches: [String: Any] = [

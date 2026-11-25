@@ -7,6 +7,12 @@ struct BoardRow: Equatable {
     let timeText: String
 }
 
+/// Describes the short line shown while the board is collapsed.
+struct BoardBadge: Equatable {
+    let status: ActivityStatus?
+    let text: String
+}
+
 /// Holds the widths of the three text columns of the board.
 private struct BoardColumns {
     let statusWidth: CGFloat
@@ -17,9 +23,20 @@ private struct BoardColumns {
 /// Draws one row per session and reports which row was clicked.
 final class ActivityBoardView: NSView {
     var rows: [BoardRow] = []
+    var badge = BoardBadge(status: nil, text: "")
+    var isCollapsed = false
     var onSelect: ((Int) -> Void)?
+    var onToggle: (() -> Void)?
 
+    static let headerTitle = "Claude"
     private static let rowHeight: CGFloat = 22
+    private static let headerHeight: CGFloat = 18
+    private static let badgeHeight: CGFloat = 24
+    private static let collapseMarkWidth: CGFloat = 10
+    private static let headerAttributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 11, weight: .semibold),
+        .foregroundColor: NSColor(white: 0.5, alpha: 1),
+    ]
     private static let sidePadding: CGFloat = 10
     private static let verticalPadding: CGFloat = 6
     private static let dotDiameter: CGFloat = 8
@@ -77,14 +94,21 @@ final class ActivityBoardView: NSView {
         }
     }
 
-    /// Measures the board needed for a list of rows.
+    /// Measures the badge shown while the board is collapsed.
+    static func fittingSize(for badge: BoardBadge) -> CGSize {
+        let textSize = (badge.text as NSString).size(withAttributes: statusAttributes)
+        let width = sidePadding * 2 + dotDiameter + columnGap + ceil(textSize.width)
+        return CGSize(width: ceil(width), height: badgeHeight)
+    }
+
+    /// Measures the open board needed for a list of rows.
     static func fittingSize(for rows: [BoardRow]) -> CGSize {
         let columns = measureColumns(rows: rows)
         var width = sidePadding * 2 + dotDiameter + columnGap + columns.statusWidth + columnGap + columns.titleWidth
         if columns.timeWidth > 0 {
             width += columnGap + columns.timeWidth
         }
-        let height = verticalPadding * 2 + rowHeight * CGFloat(rows.count)
+        let height = verticalPadding * 2 + headerHeight + rowHeight * CGFloat(rows.count)
         return CGSize(width: ceil(width), height: ceil(height))
     }
 
@@ -105,6 +129,46 @@ final class ActivityBoardView: NSView {
     }
 
     override func draw(_ dirtyRect: NSRect) {
+        if isCollapsed {
+            drawBadge()
+        } else {
+            drawOpenBoard()
+        }
+    }
+
+    /// Draws the pill with the most urgent colour and the count of unread sessions.
+    private func drawBadge() {
+        // Draw the pill
+        let pillRect = bounds.insetBy(dx: 0.5, dy: 0.5)
+        let radius = pillRect.height / 2
+        let pill = NSBezierPath(roundedRect: pillRect, xRadius: radius, yRadius: radius)
+        NSColor(white: 1, alpha: 0.97).setFill()
+        pill.fill()
+        NSColor(white: 0, alpha: 0.18).setStroke()
+        pill.lineWidth = 1
+        pill.stroke()
+
+        // Draw the dot and the text
+        let middle = bounds.height / 2
+        let dotDiameter = ActivityBoardView.dotDiameter
+        let dotRect = CGRect(
+            x: ActivityBoardView.sidePadding,
+            y: middle - dotDiameter / 2,
+            width: dotDiameter,
+            height: dotDiameter
+        )
+        ActivityBoardView.color(for: badge.status).setFill()
+        NSBezierPath(ovalIn: dotRect).fill()
+        let text = badge.text as NSString
+        let textSize = text.size(withAttributes: ActivityBoardView.statusAttributes)
+        text.draw(
+            at: CGPoint(x: dotRect.maxX + ActivityBoardView.columnGap, y: middle - textSize.height / 2),
+            withAttributes: ActivityBoardView.statusAttributes
+        )
+    }
+
+    /// Draws the card with a header that collapses it and one row per session.
+    private func drawOpenBoard() {
         // Draw the card
         let cardRect = bounds.insetBy(dx: 0.5, dy: 0.5)
         let card = NSBezierPath(roundedRect: cardRect, xRadius: 10, yRadius: 10)
@@ -113,6 +177,24 @@ final class ActivityBoardView: NSView {
         NSColor(white: 0, alpha: 0.18).setStroke()
         card.lineWidth = 1
         card.stroke()
+
+        // Draw the header with the collapse mark on the right
+        let headerTop = ActivityBoardView.verticalPadding
+        let headerMiddle = headerTop + ActivityBoardView.headerHeight / 2
+        let headerText = ActivityBoardView.headerTitle as NSString
+        let headerSize = headerText.size(withAttributes: ActivityBoardView.headerAttributes)
+        headerText.draw(
+            at: CGPoint(x: ActivityBoardView.sidePadding, y: headerMiddle - headerSize.height / 2),
+            withAttributes: ActivityBoardView.headerAttributes
+        )
+        let markRight = bounds.width - ActivityBoardView.sidePadding
+        let mark = NSBezierPath()
+        mark.move(to: CGPoint(x: markRight - ActivityBoardView.collapseMarkWidth, y: headerMiddle))
+        mark.line(to: CGPoint(x: markRight, y: headerMiddle))
+        mark.lineWidth = 2
+        mark.lineCapStyle = .round
+        NSColor(white: 0.5, alpha: 1).setStroke()
+        mark.stroke()
 
         // Draw each row
         let columns = ActivityBoardView.measureColumns(rows: rows)
@@ -123,7 +205,8 @@ final class ActivityBoardView: NSView {
 
     /// Draws the dot, status, title and time of one row.
     private func drawRow(_ row: BoardRow, index: Int, columns: BoardColumns) {
-        let rowTop = ActivityBoardView.verticalPadding + ActivityBoardView.rowHeight * CGFloat(index)
+        let rowTop = ActivityBoardView.verticalPadding + ActivityBoardView.headerHeight
+            + ActivityBoardView.rowHeight * CGFloat(index)
         let rowMiddle = rowTop + ActivityBoardView.rowHeight / 2
 
         // Draw the status dot
@@ -170,12 +253,16 @@ final class ActivityBoardView: NSView {
     }
 
     override func mouseUp(with event: NSEvent) {
-        // Work out which row the click landed on
+        // Open or collapse the board from the badge or the header
         let location = convert(event.locationInWindow, from: nil)
-        let offset = location.y - ActivityBoardView.verticalPadding
-        guard offset >= 0 else {
+        let headerBottom = ActivityBoardView.verticalPadding + ActivityBoardView.headerHeight
+        if isCollapsed || location.y < headerBottom {
+            onToggle?()
             return
         }
+
+        // Work out which row the click landed on
+        let offset = location.y - headerBottom
         let index = Int(offset / ActivityBoardView.rowHeight)
         guard index < rows.count else {
             return
@@ -235,11 +322,18 @@ final class ActivityBoard {
         boardView.onSelect = handler
     }
 
-    /// Shows the rows at the given place, riding along with a parent window when one is given.
-    func show(rows: [BoardRow], frame: CGRect, parent: NSWindow?) {
-        // Redraw when the rows change
-        if boardView.rows != rows {
+    /// Sets the handler called when the badge or the header is clicked.
+    func setToggleHandler(_ handler: @escaping () -> Void) {
+        boardView.onToggle = handler
+    }
+
+    /// Shows the rows, or the badge when collapsed, at the given place, riding along with a parent window.
+    func show(rows: [BoardRow], badge: BoardBadge, isCollapsed: Bool, frame: CGRect, parent: NSWindow?) {
+        // Redraw when anything shown changes
+        if boardView.rows != rows || boardView.badge != badge || boardView.isCollapsed != isCollapsed {
             boardView.rows = rows
+            boardView.badge = badge
+            boardView.isCollapsed = isCollapsed
             boardView.needsDisplay = true
         }
 
@@ -268,6 +362,11 @@ final class ActivityBoard {
             measuredSize = ActivityBoardView.fittingSize(for: rows)
         }
         return measuredSize
+    }
+
+    /// Measures the badge shown while the board is collapsed.
+    func fittingSize(for badge: BoardBadge) -> CGSize {
+        return ActivityBoardView.fittingSize(for: badge)
     }
 
     /// Hides the board.
