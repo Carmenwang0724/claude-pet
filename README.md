@@ -16,6 +16,7 @@ The app is a small Swift/AppKit program. It works with any pet in the Petdex (Co
 - Leaves the mouse cursor alone. She never walks or jumps to within about 220 points of it, and when it is close she walks the other way, so she stays out of whatever you are doing. Jumps away when the cursor rushes at her. Enjoys it when you rub the cursor back and forth over her head.
 - Falls asleep after the computer has been idle for 5 minutes, and wakes up when you come back.
 - Reminds you to take a break after 50 minutes of unbroken work, and suggests going to bed between midnight and 5 am.
+- Says something kind every 20 to 40 minutes while you are at the computer: that she missed you, a word of encouragement, or a line that suits the time of day. She greets you in different ways when you come back, sometimes cheers when a Claude turn finishes, and usually comforts you when one fails. She does not repeat any of her last 10 lines. All lines are in `Sources/Pet/PetChatter.swift`.
 - Enters the screen in a different way each time she is started.
 
 ## Task list
@@ -79,6 +80,7 @@ Things worth knowing:
 | Climb Walls and Ceiling | off keeps her on the floor and on windows |
 | React to the Mouse | off stops the startled jumps and the petting; she keeps her distance from the cursor either way |
 | Break and Bedtime Reminders | off stops both reminders |
+| Say Kind Things | off stops the unprompted lines and the lines after Claude turns |
 | Collapse Task List | shows the badge instead of the full list |
 | Walking Rows | As Drawn; Swap Left and Right Rows, for spritesheets whose two running rows are drawn the other way round; Mirror the Right Row for Left, for spritesheets whose two running rows both face right. Saved for each pet |
 | Mess Up the Desktop, Tidy the Desktop, Visit the Desktop on Her Own | see Desktop trips |
@@ -193,6 +195,7 @@ Write a command into `debug-request` to direct her:
 | `enter` | enter the screen again |
 | `sleep`, `awake 600` | sleep; wake up and stay awake for 600 seconds |
 | `remind`, `night` | show the break reminder, the bedtime reminder |
+| `chat`, `chat-turn`, `chat-turn failed` | say a random line now; say a line for a finished or failed turn |
 | `click` | same as clicking her |
 | `board-click 0`, `board-click 0 dry` | click the first task list row; `dry` only records the link |
 | `board-toggle` | collapse or open the task list |

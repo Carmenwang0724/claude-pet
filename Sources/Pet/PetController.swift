@@ -232,6 +232,12 @@ final class PetController: NSObject {
     var areRemindersEnabled: Bool
     var isAutoMischiefEnabled: Bool
     var isBoardCollapsed: Bool
+    var isChatterEnabled: Bool
+
+    // Track the lines said on her own
+    var nextChatTime: TimeInterval = 0
+    var recentChatLines: [String] = []
+    var lastChatLine = ""
 
     init(atlas: PetAtlas) {
         // Read the saved preferences
@@ -249,6 +255,7 @@ final class PetController: NSObject {
         self.areRemindersEnabled = defaults.bool(forKey: PetConfig.remindersEnabledKey)
         self.isAutoMischiefEnabled = defaults.bool(forKey: PetConfig.autoMischiefEnabledKey)
         self.isBoardCollapsed = defaults.bool(forKey: PetConfig.boardCollapsedKey)
+        self.isChatterEnabled = defaults.bool(forKey: PetConfig.chatterEnabledKey)
         self.panel = PetPanel.makeTransparent(size: size)
         self.petView = PetView(frame: CGRect(origin: .zero, size: size))
         super.init()
@@ -274,6 +281,7 @@ final class PetController: NSObject {
         lastMouseSampleTime = now
         lastNightNudgeAt = now - PetConfig.nightNudgeInterval + PetConfig.firstNightNudgeDelay
         nextMischiefTime = now + randomMischiefGap()
+        nextChatTime = now + TimeInterval.random(in: PetConfig.firstChatterDelay)
         if mischief.hasSnapshot {
             autoTidyTime = now + PetConfig.autoTidyMinimumDelay
         }

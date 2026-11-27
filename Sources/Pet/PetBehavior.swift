@@ -188,7 +188,7 @@ extension PetController {
             clearPlan()
             actionDeadline = now + 2
             playOnce("jumping")
-            showTransientBubble("Hehe", duration: 2, now: now)
+            say(from: PetLines.petting, duration: 2, now: now)
         }
         return true
     }
@@ -267,6 +267,7 @@ extension PetController {
             trackWorkStretch(idleTime: idleTime, now: now)
             nudgeAtNight(idleTime: idleTime, now: now)
         }
+        chatIfDue(idleTime: idleTime, now: now)
 
         // Visit the desktop now and then while the user is around to watch
         let isFreeForTrip = !holdsStage && errand == nil && !mischief.isBusy
@@ -310,7 +311,7 @@ extension PetController {
         actionDeadline = now + 1.5
         if greets {
             playOnce("waving")
-            showTransientBubble("Welcome back", duration: 3, now: now)
+            say(from: PetLines.welcomeBack, duration: 4, now: now)
         }
     }
 

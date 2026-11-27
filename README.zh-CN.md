@@ -16,6 +16,7 @@ English: [README.md](README.md)
 - 她不凑近鼠标。走路和跳跃都不会进到光标周围约 220 点的范围里，光标离得近时她往反方向走，不打扰你干活。鼠标猛冲过去，她吓得跳开。鼠标在她头上来回蹭，她会开心地跳一下。
 - 电脑 5 分钟没人碰，她就睡觉。你回来她就醒。
 - 连续用电脑 50 分钟，她提醒你休息。凌晨 0 点到 5 点还在用，她催你睡觉。
+- 你在电脑前时，她每 20 到 40 分钟说一句暖心的话：想你了、鼓励你，或者按早上、下午、晚上、深夜说应景的话。你回来时打招呼的话每次不同；Claude 做完时偶尔夸一句，出错时多半会安慰你。最近 10 句不重复。台词都在 `Sources/Pet/PetChatter.swift`。
 - 每次启动的出场方式不一样。
 
 ## 任务清单
@@ -78,6 +79,7 @@ English: [README.md](README.md)
 | Stay Put | 不闲逛，也不自己去桌面 |
 | Climb Walls and Ceiling | 关掉后只在地面和窗口顶上活动 |
 | React to the Mouse | 关掉后不再躲鼠标，摸头也没反应；离光标保持距离这一条不受影响 |
+| Say Kind Things | 关掉后不再自己说话，Claude 做完或出错时也不说 |
 | Break and Bedtime Reminders | 关掉后不再提醒休息和催睡 |
 | Collapse Task List | 只显示小胶囊，不显示整张清单 |
 | Walking Rows | 三选一：As Drawn 照原样；Swap Left and Right Rows 用于左右两行画反的素材；Mirror the Right Row for Left 用于两行都朝右的素材（比如 Kirby），左走用右走镜像。每只宠物分开记 |
@@ -193,6 +195,7 @@ touch ~/.claude-pet/debug-request
 | `enter` | 重新出场 |
 | `sleep`、`awake 600` | 睡觉；醒来并在 600 秒内不睡 |
 | `remind`、`night` | 弹出休息提醒、催睡提醒 |
+| `chat`、`chat-turn`、`chat-turn failed` | 马上随机说一句；说一句做完或出错时的话 |
 | `click` | 等同于单击她 |
 | `board-click 0`、`board-click 0 dry` | 点清单第一行；加 `dry` 只记录链接，不真的打开 |
 | `board-toggle` | 收起或展开任务清单 |

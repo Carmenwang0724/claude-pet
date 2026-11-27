@@ -53,8 +53,10 @@ extension PetController {
             playOnce("waving")
         case .turnFinished:
             playOnce("jumping")
+            chatAfterTurn(failed: false)
         case .turnFailed:
             playOnce("failed")
+            chatAfterTurn(failed: true)
         }
     }
 

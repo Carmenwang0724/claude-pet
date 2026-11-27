@@ -33,6 +33,7 @@ enum PetConfig {
     static let autoMischiefEnabledKey = "autoMischiefEnabled"
     static let manualSortAcceptedKey = "manualSortAccepted"
     static let boardCollapsedKey = "boardCollapsed"
+    static let chatterEnabledKey = "chatterEnabled"
     static let runningRowSwapKey = "runningRowSwapByPet"
     static let walkRowLayoutKey = "walkRowLayoutByPet"
     static let defaultWalkRowLayouts: [String: WalkRowLayout] = [
@@ -44,6 +45,7 @@ enum PetConfig {
         mousePlayEnabledKey: true,
         remindersEnabledKey: true,
         autoMischiefEnabledKey: true,
+        chatterEnabledKey: true,
     ]
 
     // Describe the atlas grid
@@ -122,6 +124,18 @@ enum PetConfig {
     static let nightEndHour = 5
     static let nightNudgeInterval: TimeInterval = 45 * 60
     static let firstNightNudgeDelay: TimeInterval = 10 * 60
+
+    // Say kind things now and then
+    static let firstChatterDelay: ClosedRange<TimeInterval> = (5 * 60)...(12 * 60)
+    static let chatterMinimumGap: TimeInterval = 20 * 60
+    static let chatterMaximumGap: TimeInterval = 40 * 60
+    static let chatterIdleLimit: TimeInterval = 60
+    static let chatterDuration: TimeInterval = 6
+    static let reactionLineDuration: TimeInterval = 4
+    static let hourLineChance: Double = 0.5
+    static let turnFinishedLineChance: Double = 0.35
+    static let turnFailedLineChance: Double = 0.7
+    static let recentLineMemory = 10
 
     // Tease the desktop
     static let mischiefIconCount = 6

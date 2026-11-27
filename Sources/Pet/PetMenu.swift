@@ -133,6 +133,7 @@ extension PetController: PetViewDelegate {
         menu.addItem(makeSwitch(title: "Climb Walls and Ceiling", isOn: isClimbingEnabled, action: #selector(toggleClimbing(_:))))
         menu.addItem(makeSwitch(title: "React to the Mouse", isOn: isMousePlayEnabled, action: #selector(toggleMousePlay(_:))))
         menu.addItem(makeSwitch(title: "Break and Bedtime Reminders", isOn: areRemindersEnabled, action: #selector(toggleReminders(_:))))
+        menu.addItem(makeSwitch(title: "Say Kind Things", isOn: isChatterEnabled, action: #selector(toggleChatter(_:))))
         menu.addItem(makeSwitch(title: "Collapse Task List", isOn: isBoardCollapsed, action: #selector(toggleBoardCollapse(_:))))
 
         // Add the choice of walking rows
@@ -221,6 +222,11 @@ extension PetController: PetViewDelegate {
     @objc func toggleMousePlay(_ sender: NSMenuItem) {
         isMousePlayEnabled.toggle()
         UserDefaults.standard.set(isMousePlayEnabled, forKey: PetConfig.mousePlayEnabledKey)
+    }
+
+    @objc func toggleChatter(_ sender: NSMenuItem) {
+        isChatterEnabled.toggle()
+        UserDefaults.standard.set(isChatterEnabled, forKey: PetConfig.chatterEnabledKey)
     }
 
     @objc func toggleReminders(_ sender: NSMenuItem) {
@@ -353,6 +359,8 @@ extension PetController: PetViewDelegate {
             "idleSeconds": idleSeconds(),
             "mischief": lastMischiefReport,
             "cursorIsNear": isCursorNear(x: footPoint.x, height: footPoint.y),
+            "lastChatLine": lastChatLine,
+            "nextChatIn": max(0, nextChatTime - now),
             "wantsToClimb": wantsToClimb,
             "mischiefBusy": mischief.isBusy,
             "errand": errand?.summary ?? "",
@@ -413,6 +421,13 @@ extension PetController: PetViewDelegate {
             remindBreak(now: now)
         case "night":
             showNightNudge(now: now)
+        case "chat":
+            nextChatTime = now
+            chatIfDue(idleTime: 0, now: now)
+        case "chat-turn":
+            let isFailure = words.count == 2 && words[1] == "failed"
+            let pool = isFailure ? PetLines.turnFailed : PetLines.turnFinished
+            say(from: pool, duration: PetConfig.reactionLineDuration, now: now)
         case "click":
             petViewWasClicked()
         case "board-click":
