@@ -164,9 +164,6 @@ final class PetController: NSObject {
 
     // Track the current plan
     var actionDeadline: TimeInterval = 0
-    var walkTargetX: CGFloat?
-    var isVisitingCursor = false
-    var visitedCursorRestSince: TimeInterval = -1
     var wantsToClimb = false
     var climbTargetHeight: CGFloat?
     var climbLimits = CGRect.zero
@@ -182,7 +179,6 @@ final class PetController: NSObject {
     var simulatedMousePath: [CGPoint] = []
     var lastMouseSampleTime: TimeInterval = 0
     var mouseVelocity = CGVector.zero
-    var mouseStillSince: TimeInterval = 0
     var startleCooldownUntil: TimeInterval = 0
     var pettingTravel: CGFloat = 0
     var pettingReversals = 0
@@ -276,7 +272,6 @@ final class PetController: NSObject {
         lastTickTime = now
         lastMouseLocation = NSEvent.mouseLocation
         lastMouseSampleTime = now
-        mouseStillSince = now
         lastNightNudgeAt = now - PetConfig.nightNudgeInterval + PetConfig.firstNightNudgeDelay
         nextMischiefTime = now + randomMischiefGap()
         if mischief.hasSnapshot {

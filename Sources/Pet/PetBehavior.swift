@@ -12,15 +12,6 @@ extension PetController {
             return
         }
 
-        // Walk over to a mouse cursor that has just come to rest
-        let wantsCursorVisit = Double.random(in: 0..<1) < PetConfig.cursorVisitChance
-        if wantsCursorVisit, let visitX = cursorVisitTarget(now: now) {
-            startWalking(toward: visitX, now: now)
-            isVisitingCursor = true
-            visitedCursorRestSince = mouseStillSince
-            return
-        }
-
         // Hop to a window now and then when one is within reach
         let wantsWindowJump = Double.random(in: 0..<1) < PetConfig.windowJumpChance
         if wantsWindowJump && jumpToAnotherLedge(onlyWindows: true) {
@@ -73,9 +64,12 @@ extension PetController {
         actionDeadline = now + Double.random(in: 3...6)
     }
 
-    /// Walks for a few seconds, away from a nearby ledge end.
+    /// Walks for a few seconds, away from a nearby ledge end and away from a nearby cursor.
     func startWalking(now: TimeInterval) {
         var direction: CGFloat = Bool.random() ? 1 : -1
+        if let awayDirection = directionAwayFromNearbyCursor() {
+            direction = awayDirection
+        }
         if let ledge = support {
             if footPoint.x - ledge.minimumX < 80 {
                 direction = 1
@@ -87,14 +81,6 @@ extension PetController {
         clearPlan()
         motion = .walking(direction: direction)
         actionDeadline = now + Double.random(in: 2...5)
-    }
-
-    /// Walks to a given spot on the current ledge.
-    func startWalking(toward targetX: CGFloat, now: TimeInterval) {
-        clearPlan()
-        walkTargetX = targetX
-        motion = .walking(direction: targetX > footPoint.x ? 1 : -1)
-        actionDeadline = now + 60
     }
 
     /// Walks to a side of the screen in order to climb it.
@@ -114,37 +100,26 @@ extension PetController {
 
     // MARK: - Mouse
 
-    /// Finds a spot next to a resting cursor that the pet can walk to.
-    func cursorVisitTarget(now: TimeInterval) -> CGFloat? {
-        guard isMousePlayEnabled, let ledge = support else {
-            return nil
-        }
-
-        // Visit each rest of the cursor once, shortly after it began
-        let restTime = now - mouseStillSince
-        guard restTime >= PetConfig.cursorRestTime, restTime <= 20 else {
-            return nil
-        }
-        guard mouseStillSince != visitedCursorRestSince else {
-            return nil
-        }
-
-        // Require the cursor to be near the pet's level and a walk away
+    /// Tells whether the cursor is within the space the pet leaves free around it, for a spot on a ledge.
+    func isCursorNear(x: CGFloat, height: CGFloat) -> Bool {
         let mouse = lastMouseLocation
-        let distance = mouse.x - footPoint.x
-        guard abs(distance) >= PetConfig.cursorVisitGap * 2, abs(distance) <= PetConfig.cursorVisitReach else {
-            return nil
-        }
-        guard mouse.y >= ledge.height - 60, mouse.y <= ledge.height + bodyHeight + 260 else {
-            return nil
-        }
+        let isBesideSpot = abs(mouse.x - x) <= PetConfig.cursorPersonalSpace
+        let isBelowTop = mouse.y <= height + bodyHeight + PetConfig.cursorPersonalSpaceAbove
+        let isAboveBottom = mouse.y >= height - PetConfig.cursorPersonalSpaceBelow
+        return isBesideSpot && isBelowTop && isAboveBottom
+    }
 
-        // Stop a little short of the cursor
-        let stopX = mouse.x - (distance > 0 ? 1 : -1) * PetConfig.cursorVisitGap
-        guard ledge.contains(x: stopX) else {
+    /// Gives the walking direction that leads away from a cursor near the pet, or nil when there is none.
+    func directionAwayFromNearbyCursor() -> CGFloat? {
+        let widerReach = PetConfig.cursorPersonalSpace * 2
+        let mouse = lastMouseLocation
+        let isBesidePet = abs(mouse.x - footPoint.x) <= widerReach
+        let isBelowTop = mouse.y <= footPoint.y + bodyHeight + PetConfig.cursorPersonalSpaceAbove
+        let isAboveBottom = mouse.y >= footPoint.y - PetConfig.cursorPersonalSpaceBelow
+        guard isBesidePet && isBelowTop && isAboveBottom else {
             return nil
         }
-        return stopX
+        return mouse.x > footPoint.x ? -1 : 1
     }
 
     /// Follows the cursor and triggers the reactions to it.
@@ -160,9 +135,6 @@ extension PetController {
                 dx: mouseVelocity.dx * 0.5 + rawVelocityX * 0.5,
                 dy: mouseVelocity.dy * 0.5 + rawVelocityY * 0.5
             )
-        }
-        if hypot(mouse.x - previousMouse.x, mouse.y - previousMouse.y) > 2 {
-            mouseStillSince = now
         }
         lastMouseLocation = mouse
         lastMouseSampleTime = now

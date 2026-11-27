@@ -68,9 +68,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Return the first pet that loads
         for listing in orderedListings {
             do {
-                let swapsRunningRows = PetPreferences.swapsRunningRows(identifier: listing.identifier)
+                let walkRowLayout = PetPreferences.walkRowLayout(identifier: listing.identifier)
                 return try autoreleasepool {
-                    try PetAtlas.load(folder: listing.folder, swapsRunningRows: swapsRunningRows)
+                    try PetAtlas.load(folder: listing.folder, walkRowLayout: walkRowLayout)
                 }
             } catch {
                 NSLog("ClaudePet could not load \(listing.identifier): \(error)")

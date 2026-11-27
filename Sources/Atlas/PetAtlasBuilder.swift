@@ -54,12 +54,12 @@ enum PetAtlasBuilder {
     ]
 
     /// Cuts an atlas from the command line and returns the exit status.
-    static func run(petFolderPath: String, cacheFolderPath: String, swapsRunningRows: Bool) -> Int32 {
+    static func run(petFolderPath: String, cacheFolderPath: String, walkRowLayout: WalkRowLayout) -> Int32 {
         do {
             try build(
                 petFolder: URL(fileURLWithPath: petFolderPath, isDirectory: true),
                 cacheFolder: URL(fileURLWithPath: cacheFolderPath, isDirectory: true),
-                swapsRunningRows: swapsRunningRows
+                walkRowLayout: walkRowLayout
             )
             return 0
         } catch {
@@ -69,7 +69,7 @@ enum PetAtlasBuilder {
     }
 
     /// Cuts the atlas of a pet folder and writes the clips into a cache folder.
-    static func build(petFolder: URL, cacheFolder: URL, swapsRunningRows: Bool) throws {
+    static func build(petFolder: URL, cacheFolder: URL, walkRowLayout: WalkRowLayout) throws {
         // Read the manifest
         let manifest = PetFolder.readManifest(folder: petFolder)
 
@@ -107,7 +107,7 @@ enum PetAtlasBuilder {
         // Cut each canonical row into a clip
         var cutRows: [String: CutRow] = [:]
         for layout in layouts {
-            let atlasRowIndex = atlasRow(for: layout, swapsRunningRows: swapsRunningRows)
+            let atlasRowIndex = atlasRow(for: layout, swapsRunningRows: walkRowLayout == .swapped)
             if let cutRow = cutRow(layout: layout, atlasRowIndex: atlasRowIndex, pixels: pixels) {
                 cutRows[layout.name] = cutRow
             }
@@ -127,7 +127,7 @@ enum PetAtlasBuilder {
         // Build the walking and sleeping clips
         let walkingClips = makeWalkingClips(
             rightRow: cutRows["running-right"],
-            leftRow: cutRows["running-left"],
+            leftRow: walkRowLayout == .rightMirrored ? nil : cutRows["running-left"],
             idleClip: idleRow.clip,
             pixels: pixels
         )

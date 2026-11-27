@@ -13,7 +13,7 @@ English: [README.md](README.md)
 - 大部分时间站着。偶尔走一小段、原地跳一下，或者摆一个素材里的备用姿势。
 - 窗口顶上有空位时会跳上去。你拖动那个窗口，她跟着走。
 - 走到屏幕左右两边会往上爬。爬到顶可能翻到菜单栏下面倒着走一段，再松手掉下来。
-- 鼠标在她附近停下，她走过去挥手。鼠标猛冲过去，她吓得跳开。鼠标在她头上来回蹭，她会开心地跳一下。
+- 她不凑近鼠标。走路和跳跃都不会进到光标周围约 220 点的范围里，光标离得近时她往反方向走，不打扰你干活。鼠标猛冲过去，她吓得跳开。鼠标在她头上来回蹭，她会开心地跳一下。
 - 电脑 5 分钟没人碰，她就睡觉。你回来她就醒。
 - 连续用电脑 50 分钟，她提醒你休息。凌晨 0 点到 5 点还在用，她催你睡觉。
 - 每次启动的出场方式不一样。
@@ -77,10 +77,10 @@ English: [README.md](README.md)
 | Size | Small、Medium、Large、Extra Large |
 | Stay Put | 不闲逛，也不自己去桌面 |
 | Climb Walls and Ceiling | 关掉后只在地面和窗口顶上活动 |
-| React to the Mouse | 关掉后不再走向鼠标、躲鼠标，摸头也没反应 |
+| React to the Mouse | 关掉后不再躲鼠标，摸头也没反应；离光标保持距离这一条不受影响 |
 | Break and Bedtime Reminders | 关掉后不再提醒休息和催睡 |
 | Collapse Task List | 只显示小胶囊，不显示整张清单 |
-| Swap Left and Right Walk | 有些素材把左右两行跑步画反了，用这项纠正 |
+| Walking Rows | 三选一：As Drawn 照原样；Swap Left and Right Rows 用于左右两行画反的素材；Mirror the Right Row for Left 用于两行都朝右的素材（比如 Kirby），左走用右走镜像。每只宠物分开记 |
 | Mess Up the Desktop、Tidy the Desktop、Visit the Desktop on Her Own | 见「去桌面捣乱」 |
 | Clear Task List | 清空清单 |
 | Quit | 退出 |

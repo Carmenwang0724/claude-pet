@@ -134,8 +134,19 @@ extension PetController: PetViewDelegate {
         menu.addItem(makeSwitch(title: "React to the Mouse", isOn: isMousePlayEnabled, action: #selector(toggleMousePlay(_:))))
         menu.addItem(makeSwitch(title: "Break and Bedtime Reminders", isOn: areRemindersEnabled, action: #selector(toggleReminders(_:))))
         menu.addItem(makeSwitch(title: "Collapse Task List", isOn: isBoardCollapsed, action: #selector(toggleBoardCollapse(_:))))
-        let swapsRunningRows = PetPreferences.swapsRunningRows(identifier: atlas.identifier)
-        menu.addItem(makeSwitch(title: "Swap Left and Right Walk", isOn: swapsRunningRows, action: #selector(toggleRunningRowSwap(_:))))
+
+        // Add the choice of walking rows
+        let walkRowLayout = PetPreferences.walkRowLayout(identifier: atlas.identifier)
+        let walkRowMenu = NSMenu()
+        for layout in WalkRowLayout.allCases {
+            let item = makeItem(title: layout.title, action: #selector(selectWalkRowLayout(_:)))
+            item.representedObject = layout.rawValue
+            item.state = layout == walkRowLayout ? .on : .off
+            walkRowMenu.addItem(item)
+        }
+        let walkRowItem = NSMenuItem(title: "Walking Rows", action: nil, keyEquivalent: "")
+        walkRowItem.submenu = walkRowMenu
+        menu.addItem(walkRowItem)
         menu.addItem(NSMenuItem.separator())
 
         // Add the desktop teasing
@@ -227,11 +238,13 @@ extension PetController: PetViewDelegate {
         nextMischiefTime = CACurrentMediaTime() + randomMischiefGap()
     }
 
-    @objc func toggleRunningRowSwap(_ sender: NSMenuItem) {
-        // Flip the saved choice for the current pet
+    @objc func selectWalkRowLayout(_ sender: NSMenuItem) {
+        // Save the choice for the current pet
+        guard let rawValue = sender.representedObject as? String, let layout = WalkRowLayout(rawValue: rawValue) else {
+            return
+        }
         let identifier = atlas.identifier
-        let swapsRunningRows = !PetPreferences.swapsRunningRows(identifier: identifier)
-        PetPreferences.setSwapsRunningRows(swapsRunningRows, identifier: identifier)
+        PetPreferences.setWalkRowLayout(layout, identifier: identifier)
 
         // Cut the atlas again
         guard let listing = PetLibrary.listing(identifier: identifier) else {
@@ -258,9 +271,9 @@ extension PetController: PetViewDelegate {
 
     /// Loads a pet with its saved options and shows it.
     func showPet(listing: PetListing) -> Bool {
-        let swapsRunningRows = PetPreferences.swapsRunningRows(identifier: listing.identifier)
+        let walkRowLayout = PetPreferences.walkRowLayout(identifier: listing.identifier)
         let loadedAtlas = autoreleasepool {
-            try? PetAtlas.load(folder: listing.folder, swapsRunningRows: swapsRunningRows)
+            try? PetAtlas.load(folder: listing.folder, walkRowLayout: walkRowLayout)
         }
         guard let newAtlas = loadedAtlas else {
             NSSound.beep()
@@ -339,7 +352,7 @@ extension PetController: PetViewDelegate {
             "ignoresMouse": panel.ignoresMouseEvents,
             "idleSeconds": idleSeconds(),
             "mischief": lastMischiefReport,
-            "isVisitingCursor": isVisitingCursor,
+            "cursorIsNear": isCursorNear(x: footPoint.x, height: footPoint.y),
             "wantsToClimb": wantsToClimb,
             "mischiefBusy": mischief.isBusy,
             "errand": errand?.summary ?? "",

@@ -34,7 +34,11 @@ enum PetConfig {
     static let manualSortAcceptedKey = "manualSortAccepted"
     static let boardCollapsedKey = "boardCollapsed"
     static let runningRowSwapKey = "runningRowSwapByPet"
-    static let petsWithSwappedRunningRows: Set<String> = ["claude-opus-scholar"]
+    static let walkRowLayoutKey = "walkRowLayoutByPet"
+    static let defaultWalkRowLayouts: [String: WalkRowLayout] = [
+        "claude-opus-scholar": .swapped,
+        "kirby": .rightMirrored,
+    ]
     static let defaultSwitches: [String: Any] = [
         climbingEnabledKey: true,
         mousePlayEnabledKey: true,
@@ -99,10 +103,10 @@ enum PetConfig {
     static let ceilingCrossChance: Double = 0.6
 
     // Play with the mouse
-    static let cursorRestTime: TimeInterval = 1.2
-    static let cursorVisitChance: Double = 0.35
-    static let cursorVisitGap: CGFloat = 55
-    static let cursorVisitReach: CGFloat = 700
+    static let cursorPersonalSpace: CGFloat = 220
+    static let cursorPersonalSpaceAbove: CGFloat = 180
+    static let cursorPersonalSpaceBelow: CGFloat = 80
+    static let landingSpotTries = 4
     static let startleMouseSpeed: CGFloat = 1400
     static let startleDistance: CGFloat = 170
     static let startleCooldown: TimeInterval = 4
@@ -181,21 +185,47 @@ enum PetConfig {
     static let eventsFileLimit: UInt64 = 256 * 1024
 }
 
+/// Says which spritesheet rows the two walking clips are made from.
+enum WalkRowLayout: String, CaseIterable {
+    case asDrawn = "plain"
+    case swapped = "swapped"
+    case rightMirrored = "mirrored"
+
+    /// Gives the menu title of the choice.
+    var title: String {
+        switch self {
+        case .asDrawn:
+            return "As Drawn"
+        case .swapped:
+            return "Swap Left and Right Rows"
+        case .rightMirrored:
+            return "Mirror the Right Row for Left"
+        }
+    }
+}
+
 /// Reads and saves the choices kept for each pet.
 enum PetPreferences {
-    /// Tells whether the two running rows of a pet should be exchanged.
-    static func swapsRunningRows(identifier: String) -> Bool {
-        let stored = UserDefaults.standard.dictionary(forKey: PetConfig.runningRowSwapKey) as? [String: Bool]
-        if let choice = stored?[identifier] {
-            return choice
+    /// Gives the walking row layout chosen for a pet, or its default.
+    static func walkRowLayout(identifier: String) -> WalkRowLayout {
+        // Use the saved choice
+        let stored = UserDefaults.standard.dictionary(forKey: PetConfig.walkRowLayoutKey) as? [String: String]
+        if let rawValue = stored?[identifier], let layout = WalkRowLayout(rawValue: rawValue) {
+            return layout
         }
-        return PetConfig.petsWithSwappedRunningRows.contains(identifier)
+
+        // Fall back on the older swap switch, then on the default
+        let storedSwaps = UserDefaults.standard.dictionary(forKey: PetConfig.runningRowSwapKey) as? [String: Bool]
+        if let swapsRunningRows = storedSwaps?[identifier] {
+            return swapsRunningRows ? .swapped : .asDrawn
+        }
+        return PetConfig.defaultWalkRowLayouts[identifier] ?? .asDrawn
     }
 
-    /// Saves whether the two running rows of a pet should be exchanged.
-    static func setSwapsRunningRows(_ swapsRunningRows: Bool, identifier: String) {
-        var stored = UserDefaults.standard.dictionary(forKey: PetConfig.runningRowSwapKey) as? [String: Bool] ?? [:]
-        stored[identifier] = swapsRunningRows
-        UserDefaults.standard.set(stored, forKey: PetConfig.runningRowSwapKey)
+    /// Saves the walking row layout chosen for a pet.
+    static func setWalkRowLayout(_ layout: WalkRowLayout, identifier: String) {
+        var stored = UserDefaults.standard.dictionary(forKey: PetConfig.walkRowLayoutKey) as? [String: String] ?? [:]
+        stored[identifier] = layout.rawValue
+        UserDefaults.standard.set(stored, forKey: PetConfig.walkRowLayoutKey)
     }
 }

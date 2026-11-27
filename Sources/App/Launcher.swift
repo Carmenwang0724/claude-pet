@@ -18,7 +18,7 @@ enum Launcher {
             let status = PetAtlasBuilder.run(
                 petFolderPath: arguments[2],
                 cacheFolderPath: arguments[3],
-                swapsRunningRows: arguments[4] == "1"
+                walkRowLayout: WalkRowLayout(rawValue: arguments[4]) ?? .asDrawn
             )
             exit(status)
         }

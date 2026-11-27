@@ -67,7 +67,7 @@ enum PetAtlasCache {
     static let manifestName = "atlas.json"
 
     /// Returns the folder for the cut atlas of a spritesheet as it is now.
-    static func folder(identifier: String, spritesheetURL: URL, swapsRunningRows: Bool) -> URL {
+    static func folder(identifier: String, spritesheetURL: URL, walkRowLayout: WalkRowLayout) -> URL {
         // Read the size and date of the spritesheet
         let attributes = try? FileManager.default.attributesOfItem(atPath: spritesheetURL.path)
         let fileSize = (attributes?[.size] as? NSNumber)?.intValue ?? 0
@@ -75,7 +75,7 @@ enum PetAtlasCache {
         let modificationStamp = Int(modificationDate?.timeIntervalSince1970 ?? 0)
 
         // Name the folder after everything the cut depends on
-        let rowOrder = swapsRunningRows ? "swapped" : "plain"
+        let rowOrder = walkRowLayout.rawValue
         let version = PetConfig.atlasCacheVersion
         let folderName = "\(folderPrefix(identifier: identifier))v\(version)-\(rowOrder)-\(fileSize)-\(modificationStamp)"
         return PetConfig.atlasCacheDirectory.appendingPathComponent(folderName, isDirectory: true)

@@ -136,32 +136,32 @@ final class PetAtlas {
     // MARK: - Loading
 
     /// Loads the pet stored in a folder, cutting its atlas first when that has not been done yet.
-    static func load(folder: URL, swapsRunningRows: Bool) throws -> PetAtlas {
+    static func load(folder: URL, walkRowLayout: WalkRowLayout) throws -> PetAtlas {
         // Find the cut atlas that matches the pet folder as it is now
         let manifest = PetFolder.readManifest(folder: folder)
         let spritesheetURL = try PetFolder.locateSpritesheet(folder: folder, preferredName: manifest.spritesheetName)
         let cacheFolder = PetAtlasCache.folder(
             identifier: manifest.identifier,
             spritesheetURL: spritesheetURL,
-            swapsRunningRows: swapsRunningRows
+            walkRowLayout: walkRowLayout
         )
 
         // Cut the atlas in a helper process when there is no cut atlas yet
         let cacheFileURL = cacheFolder.appendingPathComponent(PetAtlasCache.manifestName)
         if !FileManager.default.fileExists(atPath: cacheFileURL.path) {
-            try runBuilder(petFolder: folder, cacheFolder: cacheFolder, swapsRunningRows: swapsRunningRows)
+            try runBuilder(petFolder: folder, cacheFolder: cacheFolder, walkRowLayout: walkRowLayout)
         }
         return try loadCutAtlas(identifier: manifest.identifier, cacheFolder: cacheFolder)
     }
 
     /// Runs this program again in its cutting mode and waits for it to finish.
-    private static func runBuilder(petFolder: URL, cacheFolder: URL, swapsRunningRows: Bool) throws {
+    private static func runBuilder(petFolder: URL, cacheFolder: URL, walkRowLayout: WalkRowLayout) throws {
         guard let executableURL = Bundle.main.executableURL else {
             throw PetAtlasError.builderFailed(status: -1)
         }
         let process = Process()
         process.executableURL = executableURL
-        process.arguments = ["--build-cache", petFolder.path, cacheFolder.path, swapsRunningRows ? "1" : "0"]
+        process.arguments = ["--build-cache", petFolder.path, cacheFolder.path, walkRowLayout.rawValue]
         try process.run()
         process.waitUntilExit()
         guard process.terminationStatus == 0 else {

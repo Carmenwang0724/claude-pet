@@ -13,7 +13,7 @@ The app is a small Swift/AppKit program. It works with any pet in the Petdex (Co
 - Stands around most of the time. Now and then she walks a little, hops, or strikes one of the spare poses in the spritesheet.
 - Jumps onto the top edge of a window when there is room for her, and rides along when you move that window.
 - Walks to a side of the screen and climbs it. At the top she may cross over and walk upside down under the menu bar, then let go.
-- Walks over and waves when the mouse cursor comes to rest near her. Jumps away when the cursor rushes at her. Enjoys it when you rub the cursor back and forth over her head.
+- Leaves the mouse cursor alone. She never walks or jumps to within about 220 points of it, and when it is close she walks the other way, so she stays out of whatever you are doing. Jumps away when the cursor rushes at her. Enjoys it when you rub the cursor back and forth over her head.
 - Falls asleep after the computer has been idle for 5 minutes, and wakes up when you come back.
 - Reminds you to take a break after 50 minutes of unbroken work, and suggests going to bed between midnight and 5 am.
 - Enters the screen in a different way each time she is started.
@@ -77,10 +77,10 @@ Things worth knowing:
 | Size | Small, Medium, Large, Extra Large |
 | Stay Put | no wandering and no desktop visits of her own |
 | Climb Walls and Ceiling | off keeps her on the floor and on windows |
-| React to the Mouse | off stops the visits to the cursor, the startled jumps and the petting |
+| React to the Mouse | off stops the startled jumps and the petting; she keeps her distance from the cursor either way |
 | Break and Bedtime Reminders | off stops both reminders |
 | Collapse Task List | shows the badge instead of the full list |
-| Swap Left and Right Walk | for spritesheets whose two running rows are drawn the other way round |
+| Walking Rows | As Drawn; Swap Left and Right Rows, for spritesheets whose two running rows are drawn the other way round; Mirror the Right Row for Left, for spritesheets whose two running rows both face right. Saved for each pet |
 | Mess Up the Desktop, Tidy the Desktop, Visit the Desktop on Her Own | see Desktop trips |
 | Clear Task List | drops every row |
 | Quit | quits the app |

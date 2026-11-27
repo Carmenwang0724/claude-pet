@@ -27,8 +27,8 @@ enum AtlasDump {
     static func run(petFolderPath: String, outputPath: String) -> Int32 {
         do {
             let folder = URL(fileURLWithPath: petFolderPath, isDirectory: true)
-            let swapsRunningRows = PetPreferences.swapsRunningRows(identifier: folder.lastPathComponent)
-            let atlas = try PetAtlas.load(folder: folder, swapsRunningRows: swapsRunningRows)
+            let walkRowLayout = PetPreferences.walkRowLayout(identifier: folder.lastPathComponent)
+            let atlas = try PetAtlas.load(folder: folder, walkRowLayout: walkRowLayout)
             printSummary(atlas: atlas)
             printMask(atlas: atlas)
             try writeContactSheet(atlas: atlas, outputURL: URL(fileURLWithPath: outputPath))

@@ -132,8 +132,6 @@ extension PetController {
 
     /// Forgets where the pet was heading.
     func clearPlan() {
-        walkTargetX = nil
-        isVisitingCursor = false
         wantsToClimb = false
         climbTargetHeight = nil
         hangTargetX = nil
@@ -229,26 +227,23 @@ extension PetController {
         footPoint.x = min(max(footPoint.x, minimumX), maximumX)
         let nextX = footPoint.x + direction * PetConfig.walkSpeed * elapsed
 
-        // Stop at the place the pet was heading for
-        if let targetX = walkTargetX, (targetX - nextX) * direction <= 0 {
-            footPoint.x = min(max(targetX, minimumX), maximumX)
-            finishWalkToTarget(now: now)
+        // Stop before walking into the space around the cursor
+        let isHeadingForCursor = (lastMouseLocation.x - footPoint.x) * direction > 0
+        if isHeadingForCursor && isCursorNear(x: nextX, height: ledge.height) {
+            standStill(now: now)
             return
         }
 
         // Keep walking while there is ledge ahead
         if nextX >= minimumX && nextX <= maximumX {
             footPoint.x = nextX
-            let hasDestination = walkTargetX != nil || wantsToClimb
-            if now >= actionDeadline && !hasDestination {
+            if now >= actionDeadline && !wantsToClimb {
                 standStill(now: now)
             }
             return
         }
 
         // Climb or turn at the side of the screen
-        walkTargetX = nil
-        isVisitingCursor = false
         if ledge.isFloor {
             let side: WallSide = direction > 0 ? .right : .left
             let climbsByChance = Double.random(in: 0..<1) < PetConfig.climbChance
@@ -269,17 +264,6 @@ extension PetController {
             support = nil
         } else {
             motion = .walking(direction: -direction)
-        }
-    }
-
-    /// Stops at the walking target and greets the mouse cursor when that was the goal.
-    func finishWalkToTarget(now: TimeInterval) {
-        let wasVisitingCursor = isVisitingCursor
-        walkTargetX = nil
-        isVisitingCursor = false
-        standStill(now: now)
-        if wasVisitingCursor {
-            playOnce("waving")
         }
     }
 
@@ -314,11 +298,17 @@ extension PetController {
                 targets.append((ledge, lower...upper))
             }
         }
-        guard let target = targets.randomElement() else {
-            return false
+        // Pick a landing spot that keeps clear of the cursor
+        for target in targets.shuffled() {
+            for _ in 0..<PetConfig.landingSpotTries {
+                let landingX = CGFloat.random(in: target.range)
+                if !isCursorNear(x: landingX, height: target.ledge.height) {
+                    jump(toHeight: target.ledge.height, landingX: landingX)
+                    return true
+                }
+            }
         }
-        jump(toHeight: target.ledge.height, landingX: CGFloat.random(in: target.range))
-        return true
+        return false
     }
 
     /// Launches an arc that comes down at a given point.
